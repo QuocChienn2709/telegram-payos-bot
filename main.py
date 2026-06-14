@@ -11,7 +11,7 @@ from handlers.user import router as user_router
 from handlers.payment import router as payment_router
 from handlers.admin import router as admin_router
 
-# Khởi tạo Bot
+# ================== KHỞI TẠO BOT ==================
 bot = Bot(
     token=BOT_TOKEN,
     default=DefaultBotProperties(parse_mode="HTML")
@@ -24,9 +24,15 @@ dp.include_router(payment_router)
 dp.include_router(admin_router)
 
 
+# ================== PAYOS WEBHOOK ==================
 async def payos_webhook(request):
+    # Hỗ trợ GET để test
+    if request.method == "GET":
+        return web.Response(text="✅ Webhook PayOS is active and running!")
+
     from payos import PayOS
     from config import PAYOS_CLIENT_ID, PAYOS_API_KEY, PAYOS_CHECKSUM_KEY
+    
     try:
         data = await request.json()
         payos = PayOS(PAYOS_CLIENT_ID, PAYOS_API_KEY, PAYOS_CHECKSUM_KEY)
@@ -43,35 +49,36 @@ async def payos_webhook(request):
             if order:
                 await bot.send_message(
                     order['user_id'],
-                    "✅ <b>Thanh toán thành công!</b>\nĐang xử lý và gửi tài khoản..."
+                    "✅ <b>Thanh toán thành công!</b>\nĐang xử lý và gửi tài khoản cho bạn..."
                 )
-                # TODO: Thêm logic gửi tài khoản tự động sau
+                # Logic gửi tài khoản sẽ được bổ sung sau
+                logging.info(f"Payment success for order {order_code}")
+                
     except Exception as e:
         logging.error(f"Webhook error: {e}")
     
     return web.Response(text="OK")
 
 
+# ================== MAIN FUNCTION ==================
 async def main():
     logging.basicConfig(level=logging.INFO)
     
-    # ================== WEBHOOK SERVER ==================
+    # Start Webhook Server
     app = web.Application()
-    app.router.add_post("/webhook", payos_webhook)
+    app.router.add_get("/webhook", payos_webhook)   # Test GET
+    app.router.add_post("/webhook", payos_webhook)  # PayOS POST
     
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, '0.0.0.0', 8080)
     await site.start()
     
-    logging.info(f"Webhook server started on port 8080")
+    logging.info("🚀 Bot started successfully!")
     logging.info(f"Webhook URL: {WEBHOOK_URL}")
     
-    # Không dùng polling khi deploy trên Render (tránh conflict)
-    # await dp.start_polling(bot)   ← Đã comment
-    
-    # Giữ process chạy
-    await asyncio.Event().wait()  # Giữ bot chạy vô hạn
+    # Giữ process chạy (không dùng polling khi deploy trên Render)
+    await asyncio.Event().wait()
 
 
 if __name__ == "__main__":
