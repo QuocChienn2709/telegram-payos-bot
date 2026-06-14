@@ -11,7 +11,7 @@ from handlers.user import router as user_router
 from handlers.payment import router as payment_router
 from handlers.admin import router as admin_router
 
-# Khởi tạo Bot đúng cách với aiogram 3.12+
+# Khởi tạo Bot
 bot = Bot(
     token=BOT_TOKEN,
     default=DefaultBotProperties(parse_mode="HTML")
@@ -22,6 +22,7 @@ dp = Dispatcher(storage=MemoryStorage())
 dp.include_router(user_router)
 dp.include_router(payment_router)
 dp.include_router(admin_router)
+
 
 async def payos_webhook(request):
     from payos import PayOS
@@ -41,19 +42,20 @@ async def payos_webhook(request):
             
             if order:
                 await bot.send_message(
-                    order['user_id'], 
-                    "✅ <b>Thanh toán thành công!</b>\nĐang gửi tài khoản..."
+                    order['user_id'],
+                    "✅ <b>Thanh toán thành công!</b>\nĐang xử lý và gửi tài khoản..."
                 )
-                # Logic gửi tài khoản sẽ được bổ sung sau
+                # TODO: Thêm logic gửi tài khoản tự động sau
     except Exception as e:
         logging.error(f"Webhook error: {e}")
     
     return web.Response(text="OK")
 
+
 async def main():
     logging.basicConfig(level=logging.INFO)
     
-    # Start webhook server
+    # ================== WEBHOOK SERVER ==================
     app = web.Application()
     app.router.add_post("/webhook", payos_webhook)
     
@@ -62,8 +64,15 @@ async def main():
     site = web.TCPSite(runner, '0.0.0.0', 8080)
     await site.start()
     
-    logging.info("Bot started!")
-    await dp.start_polling(bot)
+    logging.info(f"Webhook server started on port 8080")
+    logging.info(f"Webhook URL: {WEBHOOK_URL}")
+    
+    # Không dùng polling khi deploy trên Render (tránh conflict)
+    # await dp.start_polling(bot)   ← Đã comment
+    
+    # Giữ process chạy
+    await asyncio.Event().wait()  # Giữ bot chạy vô hạn
+
 
 if __name__ == "__main__":
     asyncio.run(main())
