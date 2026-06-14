@@ -1,0 +1,7 @@
+aiogram==3.13.0
+pymongo
+motor
+python-dotenv
+payos
+aiohttp
+aiofiles
