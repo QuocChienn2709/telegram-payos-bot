@@ -4,7 +4,7 @@ def main_menu():
     kb = [
         [InlineKeyboardButton(text="🛒 Mua Tài Khoản", callback_data="shop")],
         [InlineKeyboardButton(text="💰 Ví của tôi", callback_data="wallet")],
-        [InlineKeyboardButton(text="📜 Lịch sử mua", callback_data="history")],
+        [InlineKeyboardButton(text="📜 Lịch sử", callback_data="history")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
@@ -17,24 +17,23 @@ def products_kb(products_list):
     kb = []
     for p in products_list:
         kb.append([InlineKeyboardButton(
-            text=f"{p['name']} - {p['price']}đ ({p['stock']} còn)",
-            callback_data=f"prod_{p['_id']}"
+            text=f"{p['name']} - {p['price']:,}đ ({p.get('stock', 0)})",
+            callback_data=f"prod_{str(p['_id'])}"
         )])
     kb.append([InlineKeyboardButton(text="🔙 Quay lại", callback_data="shop")])
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
 def payment_method_kb(product_id):
     kb = [
-        [InlineKeyboardButton(text="💳 Thanh toán QR (PayOS)", callback_data=f"pay_qr_{product_id}")],
-        [InlineKeyboardButton(text="💰 Thanh toán bằng Ví", callback_data=f"pay_wallet_{product_id}")],
-        [InlineKeyboardButton(text="🔙 Quay lại", callback_data=f"prod_back_{product_id}")]
+        [InlineKeyboardButton(text="💳 Thanh toán QR PayOS", callback_data=f"pay_qr_{product_id}")],
+        [InlineKeyboardButton(text="💰 Dùng Ví", callback_data=f"pay_wallet_{product_id}")],
+        [InlineKeyboardButton(text="🔙 Quay lại", callback_data="shop")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
 def admin_menu():
     kb = [
-        [InlineKeyboardButton(text="📤 Upload Tài Khoản TXT", callback_data="admin_upload")],
-        [InlineKeyboardButton(text="📊 Quản lý Sản phẩm", callback_data="admin_products")],
-        [InlineKeyboardButton(text="👥 Danh sách User", callback_data="admin_users")],
+        [InlineKeyboardButton(text="📤 Upload Tài Khoản (TXT)", callback_data="admin_upload")],
+        [InlineKeyboardButton(text="🛠 Quản lý Sản phẩm", callback_data="admin_products")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
