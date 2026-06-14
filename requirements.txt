@@ -1,7 +1,7 @@
-aiogram==3.13.0
+aiogram==3.12.0
+motor==3.7.1
 pymongo
-motor
 python-dotenv
 payos
-aiohttp
+aiohttp==3.10.11
 aiofiles
